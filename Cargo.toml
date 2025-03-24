@@ -1,0 +1,16 @@
+[package]
+name = "godot-sdcpp"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate-type = ["cdylib"] # Compile this crate to a dynamic C library.
+
+[dependencies]
+diffusion-rs = { git = "https://github.com/wandbrandon/diffusion-rs", branch = "bmw-api_modified" }
+godot = { version = "0.2.4", features = [
+    "experimental-threads",
+    "register-docs",
+] }
+image = "0.25.5"
+thiserror = "2.0.12"
