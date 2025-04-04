@@ -8,7 +8,7 @@ crate-type = ["cdylib"] # Compile this crate to a dynamic C library.
 
 [dependencies]
 diffusion-rs = { git = "https://github.com/wandbrandon/diffusion-rs", branch = "bmw-api_modified" }
-godot = { version = "0.2.4", features = [
+godot = { git = "https://github.com/godot-rust/gdext", branch = "master", features = [
     "experimental-threads",
     "register-docs",
 ] }

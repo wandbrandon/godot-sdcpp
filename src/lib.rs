@@ -1,20 +1,16 @@
 use diffusion::ModelOutput;
 use diffusion_rs::{
     api::ModelCtx, model_config::ModelConfigBuilder, txt2img_config::Txt2ImgConfigBuilder,
-    utils::SdLogLevel,
 };
 use godot::{
     classes::{Image, ProjectSettings},
     prelude::*,
 };
 use std::{
-    ffi::c_void,
     path::PathBuf,
     sync::{mpsc::Receiver, Arc, Mutex},
 };
-use utils::{
-    godot_log_callback, GRngFunction, GSampleMethod, GSchedule, GWeightType, IntoGImage, TryIntoRGB,
-};
+use utils::{GRngFunction, GSampleMethod, GSchedule, GWeightType, IntoGImage, TryIntoRGB};
 mod diffusion;
 mod utils;
 use thiserror::Error;
@@ -22,9 +18,7 @@ use thiserror::Error;
 #[derive(Error, Debug)]
 pub enum GodotDiffusionError {
     #[error("Diffusion Error: {0}")]
-    DiffusionError(#[from] diffusion_rs::utils::DiffusionError),
-    #[error("Model Context Lock was Poisoned")]
-    PoisonedLockError,
+    DiffusionError(#[from] diffusion_rs::types::DiffusionError),
 }
 
 struct GodotSDCPPExtension;
@@ -111,13 +105,12 @@ impl INode for DiffusionModelContext {
     fn physics_process(&mut self, _delta: f64) {
         while let Some(rx) = self.model_receiver.as_ref() {
             match rx.try_recv() {
-                Ok(diffusion::ModelOutput::Step(_)) => {
-                    self.base_mut()
-                        .emit_signal("model_step", &[Variant::from("step")]);
+                Ok(diffusion::ModelOutput::Step(step, steps, time)) => {
+                    self.signals().step().emit(step, steps, time);
                 }
                 Ok(diffusion::ModelOutput::Done(response)) => {
                     self.model = Some(response);
-                    self.base_mut().emit_signal("model_build_complete", &[]);
+                    self.signals().build_complete().emit();
                 }
                 Ok(diffusion::ModelOutput::FatalErr(msg)) => {
                     godot_error!("Model worker crashed: {msg}");
@@ -195,6 +188,14 @@ impl DiffusionModelContext {
 
         godot_print!("Building Config");
 
+        // make and store channels for communicating with the llm worker thread
+        let (sender, receiver) = std::sync::mpsc::channel();
+        self.model_receiver = Some(receiver);
+        // Clone the sender for use in the model worker
+        let sender_clone = sender.clone();
+
+        let strtest = Arc::new(Mutex::new(String::new()));
+
         let model_config = ModelConfigBuilder::default()
             .model(model)
             .clip_l(clip_l)
@@ -216,38 +217,37 @@ impl DiffusionModelContext {
             .keep_control_net_cpu(self.keep_control_net_cpu)
             .keep_vae_on_cpu(self.keep_vae_on_cpu)
             .flash_attention(self.flash_attention)
-            .log_callback(godot_log_callback as extern "C" fn(SdLogLevel, *const i8, *mut c_void))
             .build()
             .unwrap();
 
-        godot_print!("Config Built");
+        ModelCtx::set_log_callback(|level, text| {
+            let trim_text = text.trim();
+            match level {
+                diffusion_rs::types::SdLogLevel::SD_LOG_DEBUG => godot_print!("{trim_text}"),
+                diffusion_rs::types::SdLogLevel::SD_LOG_INFO => godot_print!("{trim_text}"),
+                diffusion_rs::types::SdLogLevel::SD_LOG_WARN => godot_warn!("{trim_text}"),
+                diffusion_rs::types::SdLogLevel::SD_LOG_ERROR => godot_error!("{trim_text}"),
+                _ => godot_print!("{trim_text}"),
+            }
+        });
 
-        let result = || -> Result<(), String> {
-            // make and store channels for communicating with the llm worker thread
-            let (sender, receiver) = std::sync::mpsc::channel();
-            self.model_receiver = Some(receiver);
-            // start the llm worker
-            std::thread::spawn(move || diffusion::build_model(&model_config, &sender));
-            Ok(())
-        };
+        ModelCtx::set_progress_callback(move |step, steps, time| {
+            sender_clone
+                .send(ModelOutput::Step(step, steps, time))
+                .expect("Failed to send progress message")
+        });
 
-        // run it and show error in godot if it fails
-        if let Err(msg) = result() {
-            godot_error!("Error running model: {}", msg);
-        }
-    }
+        godot_print!("{strtest:?}");
 
-    fn get_model(&self) -> Result<Arc<Mutex<ModelCtx>>, GodotDiffusionError> {
-        self.model
-            .clone()
-            .ok_or(GodotDiffusionError::PoisonedLockError)
+        godot_print!("Starting Model Worker");
+        std::thread::spawn(move || diffusion::run_model_worker(&model_config, &sender));
     }
 
     #[signal]
-    fn model_step(step: String);
+    fn step(step: i32, steps: i32, time: f32);
 
     #[signal]
-    fn model_build_complete();
+    fn build_complete();
 }
 
 #[derive(GodotClass)]
@@ -262,7 +262,7 @@ struct LoraModel {
 
 #[derive(GodotClass)]
 #[class(base=Node)]
-struct DiffusionImageGen {
+struct DiffusionImageGenerator {
     #[export]
     /// The model node for the txt2img.
     model_node: Option<Gd<DiffusionModelContext>>,
@@ -364,9 +364,9 @@ struct DiffusionImageGen {
 }
 
 #[godot_api]
-impl INode for DiffusionImageGen {
+impl INode for DiffusionImageGenerator {
     fn init(base: Base<Node>) -> Self {
-        DiffusionImageGen {
+        DiffusionImageGenerator {
             model_node: None,
             prompt: "".into(),
             lora_models: Array::new(),
@@ -393,27 +393,16 @@ impl INode for DiffusionImageGen {
         }
     }
 
-    fn physics_process(&mut self, _delta: f64) {
+    fn process(&mut self, _delta: f64) {
         while let Some(rx) = self.diffusion_receiver.as_ref() {
             match rx.try_recv() {
-                Ok(diffusion::DiffusionOutput::Step(step)) => {
-                    self.base_mut()
-                        .emit_signal("generation_step", &[Variant::from(step)]);
-                }
                 Ok(diffusion::DiffusionOutput::Done(mut response)) => {
                     let images = response
                         .iter_mut()
                         .map(|f| f.into_g_image())
-                        .collect::<Vec<_>>();
+                        .collect::<Array<_>>();
 
-                    // convert to godot array
-                    let mut images_array = Array::new();
-                    for image in images.iter() {
-                        images_array.push(image);
-                    }
-
-                    self.base_mut()
-                        .emit_signal("generation_complete", &[Variant::from(images_array)]);
+                    self.signals().complete().emit(images);
                 }
                 Ok(diffusion::DiffusionOutput::FatalErr(msg)) => {
                     godot_error!("Diffusion worker crashed: {msg}");
@@ -433,17 +422,9 @@ impl INode for DiffusionImageGen {
 }
 
 #[godot_api]
-impl DiffusionImageGen {
+impl DiffusionImageGenerator {
     #[func]
-    fn start_txt2img(&mut self) {
-        godot_print!("Txt2Img started");
-
-        let control_image = self
-            .get_control_condition_image()
-            .unwrap()
-            .try_into_rgb()
-            .unwrap();
-
+    fn start_txt2img_worker(&mut self) {
         let mut binding = Txt2ImgConfigBuilder::default();
         binding
             .prompt(self.prompt.to_string())
@@ -454,11 +435,18 @@ impl DiffusionImageGen {
             .eta(self.eta)
             .sample_method(self.sample_method)
             .sample_steps(self.sample_steps)
-            .control_cond(control_image)
             .control_strength(self.control_strength)
             .clip_skip(self.clip_skip)
             .batch_count(self.batch_count)
             .seed(self.seed);
+
+        if let Some(mut control_condition_image) = self.get_control_condition_image() {
+            let control_cond = control_condition_image
+                .try_into_rgb()
+                .expect("Error: Image is not RGB!");
+
+            binding.control_cond(control_cond);
+        }
 
         for lora in self.lora_models.iter_shared() {
             let lora_model: &LoraModel = &lora.bind();
@@ -469,35 +457,27 @@ impl DiffusionImageGen {
             );
         }
 
-        let mut txt2img_config = binding.build().unwrap();
+        let mut text2image_config = binding.build().expect("Failed to build config");
 
-        let result = || -> Result<(), String> {
-            let (sender, receiver) = std::sync::mpsc::channel();
-            self.diffusion_receiver = Some(receiver);
+        let (sender, receiver) = std::sync::mpsc::channel();
+        self.diffusion_receiver = Some(receiver);
 
-            // Extract the model safely outside the thread closure
-            let model_clone = self
-                .model_node
-                .as_ref()
-                .unwrap()
-                .bind()
-                .get_model()
-                .unwrap();
-            //spawn a thread to run the model
-            std::thread::spawn(move || {
-                diffusion::start_diffusion_worker(&model_clone, &mut txt2img_config, &sender)
-            });
-            Ok(())
-        };
-        // run it and show error in godot if it fails
-        if let Err(msg) = result() {
-            godot_error!("Error running model: {}", msg);
-        }
+        // Extract the model safely outside the thread closure
+        let model_clone = self
+            .model_node
+            .as_ref()
+            .expect("Couldn't get reference to model node")
+            .bind()
+            .model
+            .clone()
+            .expect("Model Context is not initialized!");
+
+        //spawn a thread to run the model
+        std::thread::spawn(move || {
+            diffusion::run_diffusion_worker(&model_clone, &mut text2image_config, &sender)
+        });
     }
 
     #[signal]
-    fn generation_step(step: String);
-
-    #[signal]
-    fn generation_complete(images: Array<Gd<Image>>);
+    fn complete(images: Array<Gd<Image>>);
 }

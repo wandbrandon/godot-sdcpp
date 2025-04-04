@@ -151,9 +151,9 @@ checksum = "8f1fe948ff07f4bd06c30984e69f5b4899c516a3ef74f34df92a2df2ab535495"
 
 [[package]]
 name = "cc"
-version = "1.2.17"
+version = "1.2.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "1fcb57c740ae1daf453ae85f16e37396f672b039e00d9d866e07ddb24e328e3a"
+checksum = "525046617d8376e3db1deffb079e91cef90a89fc3ca5c185bbf8c9ecdd15cd5c"
 dependencies = [
  "jobserver",
  "libc",
@@ -253,9 +253,9 @@ checksum = "43da5946c66ffcc7745f48db692ffbb10a83bfe0afd96235c5c2a4fb23994929"
 
 [[package]]
 name = "darling"
-version = "0.20.10"
+version = "0.20.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6f63b86c8a8826a49b8c21f08a2d07338eec8d900540f8630dc76284be802989"
+checksum = "fc7f46116c46ff9ab3eb1597a45688b6715c6e628b5c133e288e709a29bcb4ee"
 dependencies = [
  "darling_core",
  "darling_macro",
@@ -263,9 +263,9 @@ dependencies = [
 
 [[package]]
 name = "darling_core"
-version = "0.20.10"
+version = "0.20.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95133861a8032aaea082871032f5815eb9e98cef03fa916ab4500513994df9e5"
+checksum = "0d00b9596d185e565c2207a0b01f8bd1a135483d02d9b7b0a54b11da8d53412e"
 dependencies = [
  "fnv",
  "ident_case",
@@ -277,9 +277,9 @@ dependencies = [
 
 [[package]]
 name = "darling_macro"
-version = "0.20.10"
+version = "0.20.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d336a2a514f6ccccaa3e09b02d41d35330c07ddf03a62165fcec10bb561c7806"
+checksum = "fc34b93ccb385b40dc71c6fceac4b2ad23662c7eeb248cf10d529b7e055b6ead"
 dependencies = [
  "darling_core",
  "quote",
@@ -320,7 +320,7 @@ dependencies = [
 [[package]]
 name = "diffusion-rs"
 version = "0.1.8"
-source = "git+https://github.com/wandbrandon/diffusion-rs?branch=bmw-api_modified#ae4150cee7ffa0bb8127c238c770a0fb1aef233a"
+source = "git+https://github.com/wandbrandon/diffusion-rs?branch=bmw-api_modified#984476b490d2663b7cfb9ed8bd67e2a38fbd5174"
 dependencies = [
  "derive_builder",
  "diffusion-rs-sys",
@@ -333,7 +333,7 @@ dependencies = [
 [[package]]
 name = "diffusion-rs-sys"
 version = "0.1.8"
-source = "git+https://github.com/wandbrandon/diffusion-rs?branch=bmw-api_modified#ae4150cee7ffa0bb8127c238c770a0fb1aef233a"
+source = "git+https://github.com/wandbrandon/diffusion-rs?branch=bmw-api_modified#984476b490d2663b7cfb9ed8bd67e2a38fbd5174"
 dependencies = [
  "bindgen",
  "cmake",
@@ -378,9 +378,9 @@ dependencies = [
 
 [[package]]
 name = "flate2"
-version = "1.1.0"
+version = "1.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "11faaf5a5236997af9848be0bef4db95824b1d534ebc64d0f0c6cf3e67bd38dc"
+checksum = "7ced92e76e966ca2fd84c8f7aa01a4aea65b0eb6648d72f7c8f3e2764a67fece"
 dependencies = [
  "crc32fast",
  "miniz_oxide",
@@ -401,20 +401,7 @@ checksum = "42703706b716c37f96a77aea830392ad231f44c9e9a67872fa5548707e11b11c"
 [[package]]
 name = "gdextension-api"
 version = "0.2.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ec0a03c8f9c91e3d8eb7ca56dea81c7248c03826dd3f545f33cd22ef275d4d1"
-
-[[package]]
-name = "gensym"
-version = "0.1.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "913dce4c5f06c2ea40fc178c06f777ac89fc6b1383e90c254fafb1abe4ba3c82"
-dependencies = [
- "proc-macro2",
- "quote",
- "syn",
- "uuid",
-]
+source = "git+https://github.com/godot-rust/godot4-prebuilt?branch=releases#09432b4c2c16f044f0296f96512661ea106003ff"
 
 [[package]]
 name = "getrandom"
@@ -464,8 +451,7 @@ checksum = "a8d1add55171497b4705a648c6b583acafb01d58050a51727785f0b2c8e0a2b2"
 [[package]]
 name = "godot"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a29a3646d4b02bf4587fedba4ac7b44a47d45c933fd85ba7e61292408818eaa4"
+source = "git+https://github.com/godot-rust/gdext?branch=master#a752851b2a6be7dfb79fe8046daa316ccfcad88b"
 dependencies = [
  "godot-core",
  "godot-macros",
@@ -474,8 +460,7 @@ dependencies = [
 [[package]]
 name = "godot-bindings"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a0014540bff93ba275031bc852f1cf9a3ff3216f02cdd51dc249745dccc8c578"
+source = "git+https://github.com/godot-rust/gdext?branch=master#a752851b2a6be7dfb79fe8046daa316ccfcad88b"
 dependencies = [
  "gdextension-api",
 ]
@@ -483,14 +468,12 @@ dependencies = [
 [[package]]
 name = "godot-cell"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "88184d525d763ebc88ff6806ffee35e19c7118d5c9e4eedbc74e70e069f8a671"
+source = "git+https://github.com/godot-rust/gdext?branch=master#a752851b2a6be7dfb79fe8046daa316ccfcad88b"
 
 [[package]]
 name = "godot-codegen"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "caa72d9b8be812fef2932f2a172b80c8b3feaee030571682f8f770c3d1c348d8"
+source = "git+https://github.com/godot-rust/gdext?branch=master#a752851b2a6be7dfb79fe8046daa316ccfcad88b"
 dependencies = [
  "godot-bindings",
  "heck",
@@ -503,8 +486,7 @@ dependencies = [
 [[package]]
 name = "godot-core"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2ff8345372e4c990ca592d7b61490ef88ff249fc77226f5b79beca173b4a0458"
+source = "git+https://github.com/godot-rust/gdext?branch=master#a752851b2a6be7dfb79fe8046daa316ccfcad88b"
 dependencies = [
  "glam",
  "godot-bindings",
@@ -516,23 +498,21 @@ dependencies = [
 [[package]]
 name = "godot-ffi"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "606d08085bd590d2f9c72633d4d218fee665ab3a0760b2d9daff2d964d628def"
+source = "git+https://github.com/godot-rust/gdext?branch=master#a752851b2a6be7dfb79fe8046daa316ccfcad88b"
 dependencies = [
- "gensym",
  "godot-bindings",
  "godot-codegen",
+ "godot-macros",
  "libc",
- "paste",
 ]
 
 [[package]]
 name = "godot-macros"
 version = "0.2.4"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "9c11b3188e54ebacf88feb4c968ed19048a71a329c4cfd4a06cf374f18357a36"
+source = "git+https://github.com/godot-rust/gdext?branch=master#a752851b2a6be7dfb79fe8046daa316ccfcad88b"
 dependencies = [
  "godot-bindings",
+ "libc",
  "litrs",
  "markdown",
  "proc-macro2",
@@ -586,9 +566,9 @@ checksum = "b9e0384b61958566e926dc50660321d12159025e767c18e043daf26b70104c39"
 
 [[package]]
 name = "image"
-version = "0.25.5"
+version = "0.25.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "cd6f44aed642f18953a158afeb30206f4d50da59fbc66ecb53c66488de73563b"
+checksum = "db35664ce6b9810857a38a906215e75a9c879f0696556a39f59c62829710251a"
 dependencies = [
  "bytemuck",
  "byteorder-lite",
@@ -664,10 +644,11 @@ dependencies = [
 
 [[package]]
 name = "jobserver"
-version = "0.1.32"
+version = "0.1.33"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "48d1dbcbbeb6a7fec7e059840aa538bd62aaccf972c7346c4d9d2059312853d0"
+checksum = "38f262f097c174adebe41eb73d66ae9c06b2844fb0da69969647bbddd9b0538a"
 dependencies = [
+ "getrandom 0.3.2",
  "libc",
 ]
 
@@ -720,9 +701,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.26"
+version = "0.4.27"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "30bde2b3dc3671ae49d8e2e9f044c7c005836e7a023ee57cffa25ab82764bb9e"
+checksum = "13dc2df351e3202783a1fe0d44375f7295ffb4049267b0f3018346dc122a1d94"
 
 [[package]]
 name = "loop9"
@@ -766,9 +747,9 @@ checksum = "68354c5c6bd36d73ff3feceb05efa59b6acb7626617f4962be322a825e61f79a"
 
 [[package]]
 name = "miniz_oxide"
-version = "0.8.5"
+version = "0.8.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "8e3e04debbb59698c15bacbb6d93584a8c0ca9cc3213cb423d31f760d8843ce5"
+checksum = "ff70ce3e48ae43fa075863cef62e8b43b71a4f2382229920e0df362592919430"
 dependencies = [
  "adler2",
  "simd-adler32",
@@ -873,9 +854,9 @@ dependencies = [
 
 [[package]]
 name = "once_cell"
-version = "1.21.1"
+version = "1.21.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d75b0bedcc4fe52caa0e03d9f1151a323e4aa5e2d78ba3580400cd3c9e2bc4bc"
+checksum = "42f5e15c9953c5e4ccceeb2e7382a716482c34515315f7b03532b8b4e8393d2d"
 
 [[package]]
 name = "paste"
@@ -913,9 +894,9 @@ dependencies = [
 
 [[package]]
 name = "prettyplease"
-version = "0.2.31"
+version = "0.2.32"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5316f57387668042f561aae71480de936257848f9c43ce528e311d89a07cadeb"
+checksum = "664ec5419c51e34154eec046ebcba56312d5a2fc3b09a06da188e1ad21afadf6"
 dependencies = [
  "proc-macro2",
  "syn",
@@ -1314,15 +1295,6 @@ name = "unicode-ident"
 version = "1.0.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a5f39404a5da50712a4c1eecf25e90dd62b613502b7e925fd4e4d19b5c96512"
-
-[[package]]
-name = "uuid"
-version = "1.16.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "458f7a779bf54acc9f347480ac654f68407d3aab21269a6e3c9f922acd9e2da9"
-dependencies = [
- "getrandom 0.3.2",
-]
 
 [[package]]
 name = "v_frame"

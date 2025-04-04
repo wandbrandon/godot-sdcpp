@@ -1,6 +1,4 @@
-use std::ffi::{c_char, c_void, CStr};
-
-use diffusion_rs::utils::{RngFunction, SampleMethod, Schedule, SdLogLevel, WeightType};
+use diffusion_rs::types::{RngFunction, SampleMethod, Schedule, WeightType};
 use godot::{
     classes::{image::Format, Image},
     global::Error,
@@ -290,13 +288,5 @@ impl IntoGImage for RgbImage {
             &data,
         )
         .unwrap();
-    }
-}
-
-pub extern "C" fn godot_log_callback(level: SdLogLevel, text: *const c_char, _data: *mut c_void) {
-    // Convert C string to Rust &str and print it.
-    if !text.is_null() {
-        let msg = unsafe { CStr::from_ptr(text).to_str().unwrap_or("Invalid UTF-8") };
-        godot_print!("({:?}): {}", level, msg.strip_suffix("\n").unwrap_or(msg));
     }
 }
