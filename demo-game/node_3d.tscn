@@ -1,0 +1,51 @@
+[gd_scene load_steps=5 format=3 uid="uid://b2g70grbnh8ih"]
+
+[ext_resource type="Script" uid="uid://dcqrf86nyfqcp" path="res://mesh_instance_3d.gd" id="1_5mi1x"]
+[ext_resource type="Image" uid="uid://k55sn7q4gji2" path="res://controlnet_images/canny-384x.jpg" id="2_5xl51"]
+
+[sub_resource type="PlaneMesh" id="PlaneMesh_rmio4"]
+
+[sub_resource type="LoraModel" id="LoraModel_noarx"]
+lora_model_name = "pcm_sd15_smallcfg_2step_converted"
+weight = 1.0
+
+[node name="Node3D" type="Node3D"]
+
+[node name="DiffusionModelContext" type="DiffusionModelContext" parent="."]
+model_path = "res://models/mistoonAnime_v30.safetensors"
+taesd_path = "res://models/taesd15.safetensors"
+control_net_model_path = "res://models/control_canny-fp16.safetensors"
+lora_model_dir = "res://models/loras"
+vae_decode_only = true
+schedule = "AlignYourSteps"
+flash_attention = true
+
+[node name="Camera3D" type="Camera3D" parent="."]
+transform = Transform3D(0.984986, -0.0614838, 0.161314, 3.51217e-08, 0.934428, 0.356151, -0.172634, -0.350804, 0.920399, 0.389264, 0.619464, 1.705)
+
+[node name="DirectionalLight3D" type="DirectionalLight3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.749996, 0.661443, 0, -0.661443, 0.749996, 0, 2.6195, 3.01533)
+
+[node name="MeshInstance3D" type="MeshInstance3D" parent="."]
+transform = Transform3D(1, 0, 0, 0, 0.347132, -0.937816, 0, 0.937816, 0.347132, 0, 0, 0)
+mesh = SubResource("PlaneMesh_rmio4")
+skeleton = NodePath("")
+script = ExtResource("1_5mi1x")
+
+[node name="DiffusionImageGenerator" type="DiffusionImageGenerator" parent="MeshInstance3D" node_paths=PackedStringArray("model_node")]
+model_node = NodePath("../../DiffusionModelContext")
+prompt = "masterpiece, best quality, absurdres, 1girl, succubus, bobcut, black hair, horns, purple skin, red eyes, choker, sexy, smirk
+"
+lora_models = Array[LoraModel]([SubResource("LoraModel_noarx")])
+clip_skip = 2
+cfg_scale = 1.0
+height = 384
+width = 384
+sample_method = "Tcd"
+sample_steps = 6
+seed = -1
+control_condition_image = ExtResource("2_5xl51")
+
+[connection signal="build_complete" from="DiffusionModelContext" to="MeshInstance3D" method="_on_diffusion_model_context_build_complete"]
+[connection signal="step" from="DiffusionModelContext" to="MeshInstance3D" method="_on_diffusion_model_context_step"]
+[connection signal="complete" from="MeshInstance3D/DiffusionImageGenerator" to="MeshInstance3D" method="_on_diffusion_image_generator_complete"]
