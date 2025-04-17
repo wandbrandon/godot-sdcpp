@@ -8,7 +8,10 @@ use godot::{
 };
 use std::{
     path::PathBuf,
-    sync::{mpsc::Receiver, Arc, Mutex},
+    sync::{
+        Arc, Mutex,
+        mpsc::{Receiver, Sender},
+    },
 };
 use utils::{GRngFunction, GSampleMethod, GSchedule, GWeightType, IntoGImage, TryIntoRGB};
 mod diffusion;
@@ -360,6 +363,7 @@ struct DiffusionImageGenerator {
     pub skip_layer_end: f32,
 
     diffusion_receiver: Option<Receiver<diffusion::DiffusionOutput>>,
+    diffusion_sender: Option<Sender<diffusion::DiffusionOutput>>,
     base: Base<Node>,
 }
 
@@ -389,6 +393,7 @@ impl INode for DiffusionImageGenerator {
             skip_layer_start: 0.01,
             skip_layer_end: 0.2,
             diffusion_receiver: None,
+            diffusion_sender: None,
             base,
         }
     }
@@ -413,7 +418,7 @@ impl INode for DiffusionImageGenerator {
                 Err(std::sync::mpsc::TryRecvError::Disconnected) => {
                     godot_error!("Diffusion output channel died. Did the Diffusion worker crash?");
                     // set hanging channel to None
-                    // this prevents repeating the dead channel error message foreve
+                    // this prevents repeating the dead channel error message forever
                     self.diffusion_receiver = None;
                 }
             }
@@ -457,10 +462,11 @@ impl DiffusionImageGenerator {
             );
         }
 
-        let mut text2image_config = binding.build().expect("Failed to build config");
+        let text2image_config = binding.build().expect("Failed to build config");
 
         let (sender, receiver) = std::sync::mpsc::channel();
         self.diffusion_receiver = Some(receiver);
+        self.diffusion_sender = Some(sender.clone());
 
         // Extract the model safely outside the thread closure
         let model_clone = self
@@ -474,7 +480,7 @@ impl DiffusionImageGenerator {
 
         //spawn a thread to run the model
         std::thread::spawn(move || {
-            diffusion::run_diffusion_worker(&model_clone, &mut text2image_config, &sender)
+            diffusion::run_diffusion_worker(&model_clone, &text2image_config, &sender)
         });
     }
 

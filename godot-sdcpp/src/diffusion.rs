@@ -2,7 +2,7 @@ use diffusion_rs::{
     api::ModelCtx, model_config::ModelConfig, txt2img_config::Txt2ImgConfig, types::DiffusionError,
 };
 use image::RgbImage;
-use std::sync::{mpsc::Sender, Arc, LazyLock, Mutex};
+use std::sync::{Arc, LazyLock, Mutex, mpsc::Sender};
 
 pub type Model = Arc<Mutex<ModelCtx>>;
 
@@ -72,7 +72,7 @@ pub fn model_worker(
 
 pub fn run_diffusion_worker(
     model: &Model,
-    txt2img_config: &mut Txt2ImgConfig,
+    txt2img_config: &Txt2ImgConfig,
     diffusion_sender: &Sender<DiffusionOutput>,
 ) {
     if let Err(e) = diffusion_worker(model, txt2img_config, diffusion_sender) {
@@ -84,7 +84,7 @@ pub fn run_diffusion_worker(
 
 pub fn diffusion_worker(
     model: &Model,
-    txt2img_config: &mut Txt2ImgConfig,
+    txt2img_config: &Txt2ImgConfig,
     diffusion_sender: &Sender<DiffusionOutput>,
 ) -> Result<(), WorkerError> {
     // Lock the global model worker lock to ensure that we are not building another model while inferencing.
