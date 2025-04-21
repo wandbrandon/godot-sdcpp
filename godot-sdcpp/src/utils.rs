@@ -1,6 +1,6 @@
 use diffusion_rs::types::{RngFunction, SampleMethod, Schedule, WeightType};
 use godot::{
-    classes::{image::Format, Image},
+    classes::{Image, image::Format},
     global::Error,
     prelude::*,
 };
@@ -273,11 +273,11 @@ impl TryIntoRGB for Image {
 }
 
 pub trait IntoGImage {
-    fn into_g_image(&mut self) -> Gd<Image>;
+    fn into_g_image(&self) -> Gd<Image>;
 }
 
 impl IntoGImage for RgbImage {
-    fn into_g_image(&mut self) -> Gd<Image> {
+    fn into_g_image(&self) -> Gd<Image> {
         let data = PackedByteArray::from(self.as_ref());
 
         return Image::create_from_data(

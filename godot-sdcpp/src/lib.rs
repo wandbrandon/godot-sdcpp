@@ -398,7 +398,7 @@ impl INode for DiffusionImageGenerator {
         }
     }
 
-    fn process(&mut self, _delta: f64) {
+    fn physics_process(&mut self, _delta: f64) {
         while let Some(rx) = self.diffusion_receiver.as_ref() {
             match rx.try_recv() {
                 Ok(diffusion::DiffusionOutput::Done(mut response)) => {

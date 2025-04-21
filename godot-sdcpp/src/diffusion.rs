@@ -66,7 +66,6 @@ pub fn model_worker(
         .send(ModelOutput::Done(model))
         .map_err(|_| WorkerError::SendError)?;
 
-    drop(_lock);
     Ok(())
 }
 
@@ -102,6 +101,5 @@ pub fn diffusion_worker(
         .send(DiffusionOutput::Done(txt2img_output))
         .map_err(|_| WorkerError::SendError)?;
 
-    drop(_lock);
     Ok(())
 }
